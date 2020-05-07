@@ -19,12 +19,23 @@ const cardsMenu = document.querySelector('.cards-menu');
 
 let login = localStorage.getItem('userName');
 
+const valid = function(str) {
+    const nameReg = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/
+    return nameReg.test(str);
+};
+
 function toggleModal() {
     modal.classList.toggle("is-open");
 }
 
 function toggleModalAuth() {
   modalAuth.classList.toggle('is-open');
+}
+
+function returnMain() {
+    containerPromo.classList.remove('hide');
+    restaurants.classList.remove('hide');
+    menu.classList.add('hide');
 }
 
 function authorized() {
@@ -37,6 +48,7 @@ function authorized() {
     buttonAuth.style.display = '';
     buttonOut.removeEventListener('click', logOut);
     checkAuth();
+    returnMain();
   }
 
   userName.textContent = login;
@@ -52,7 +64,7 @@ function authorized() {
 function notAuthorized() {
    function logIn(event) {
       event.preventDefault();
-       if (logInInput.value.trim()) {
+       if (valid(logInInput.value.trim())) {
            login = logInInput.value;
            localStorage.setItem('userName', login);
            toggleModalAuth();
@@ -150,18 +162,22 @@ function openGoods(event) {
 }
 
 
-
 cardsRestaurants.addEventListener('click', openGoods);
 
 cartButton.addEventListener("click", toggleModal);
 
 close.addEventListener("click", toggleModal);
 
-logo.addEventListener('click', function () {
-    containerPromo.classList.remove('hide');
-    restaurants.classList.remove('hide');
-    menu.classList.add('hide');
-});
+logo.addEventListener('click', returnMain);
+
 
 checkAuth();
 createCardRestaurant();
+
+new Swiper('.swiper-container', {
+    loop: true,
+    autoplay: {
+        delay: 5000
+    },
+    sliderPerView: 3
+});
