@@ -124,7 +124,9 @@ function createCardRestaurant(restaurant) {
 
     const card = `
                 <a class="card card-restaurant" 
-                data-products="${products}" data-name="${name}" data-stars="${stars}" data-price="${price}" data-kitchen="${kitchen}">
+                data-products="${products}" 
+                data-attr="${[name, stars, price, kitchen]}"
+                >
                     <img src="${image}" alt="image" class="card-image">
                     <div class="card-text">
                         <div class="card-heading">
@@ -180,7 +182,14 @@ function createCardGood(goods) {
     cardsMenu.insertAdjacentElement("beforeend", card);
 }
 
-function createRestaurantHeading(name, stars, price, kitchen) {
+function createRestaurantHeading(attr) {
+
+    const [
+        name,
+        stars,
+        price,
+        kitchen
+    ] = attr;
 
     restaurantHeading.textContent = '';
 
@@ -209,7 +218,7 @@ function openGoods(event) {
             containerPromo.classList.add('hide');
             restaurants.classList.add('hide');
             menu.classList.remove('hide');
-            createRestaurantHeading(restaurant.dataset.name, restaurant.dataset.stars, restaurant.dataset.price, restaurant.dataset.kitchen);
+            createRestaurantHeading(restaurant.dataset.attr.split(','));
             getData(`./db/${restaurant.dataset.products}`).then(function (data) {
                 data.forEach(createCardGood);
             });
