@@ -13,10 +13,13 @@ const buttonOut = document.querySelector('.button-out');
 const cardsRestaurants = document.querySelector('.cards-restaurants');
 const containerPromo = document.querySelector('.container-promo');
 const restaurants = document.querySelector('.restaurants');
+const restaurantHeading = restaurants.querySelector('.section-heading');
+const restaurantHeadingTitle = restaurantHeading.querySelector('.section-title');
+const restaurantHeadingSearch = restaurantHeading.querySelector('.search');
 const menu = document.querySelector('.menu');
 const logo = document.querySelector('.logo');
 const cardsMenu = document.querySelector('.cards-menu');
-const restaurantHeading = menu.querySelector('.section-heading');
+const menuHeading = menu.querySelector('.section-heading');
 const modalBody = document.querySelector('.modal-body');
 const modalPrice = document.querySelector('.modal-pricetag');
 const buttonClearCart = document.querySelector('.clear-cart');
@@ -183,7 +186,7 @@ function createCardGood(goods) {
     cardsMenu.insertAdjacentElement("beforeend", card);
 }
 
-function createRestaurantHeading(attr) {
+function createMenuHeading(attr) {
 
     const [
         name,
@@ -192,7 +195,7 @@ function createRestaurantHeading(attr) {
         kitchen
     ] = attr;
 
-    restaurantHeading.textContent = '';
+    menuHeading.textContent = '';
 
     const heading = `
 			<h2 class="section-title restaurant-title">${name}</h2>
@@ -204,7 +207,7 @@ function createRestaurantHeading(attr) {
 			<div class="category">${kitchen}</div>
     `;
 
-    restaurantHeading.insertAdjacentHTML("beforeend", heading);
+    menuHeading.insertAdjacentHTML("beforeend", heading);
 }
 
 function openGoods(event) {
@@ -219,7 +222,7 @@ function openGoods(event) {
             containerPromo.classList.add('hide');
             restaurants.classList.add('hide');
             menu.classList.remove('hide');
-            createRestaurantHeading(restaurant.dataset.attr.split(','));
+            createMenuHeading(restaurant.dataset.attr.split(','));
             getData(`./db/${restaurant.dataset.products}`).then(function (data) {
                 data.forEach(createCardGood);
             });
@@ -348,7 +351,15 @@ function init() {
 
     close.addEventListener("click", toggleModal);
 
-    logo.addEventListener('click', returnMain);
+    logo.addEventListener('click', function () {
+        restaurantHeadingSearch.classList.remove('hide');
+        restaurantHeadingTitle.textContent = 'Рестораны';
+        cardsRestaurants.textContent = '';
+        getData('./db/partners.json').then((data) => {
+            data.forEach(createCardRestaurant)
+        });
+        returnMain();
+    });
 
     inputSearch.addEventListener('keydown', function (event) {
         if (event.keyCode === 13) {
@@ -363,44 +374,75 @@ function init() {
                 return;
             }
 
+            const restaurants = [];
             const goods = [];
 
             getData('./db/partners.json')
                 .then(function (data) {
+                    const restaurantList = data.map(function (item) {
+                        return item;
+                    });
+                    restaurants.push(...restaurantList);
+
+                    restaurantList.forEach(function () {
+                        const searchRestaurant = restaurants.filter(function (item) {
+                            return item.name.toLowerCase().includes(value);
+                        });
+
+                        restaurantHeadingTitle.textContent = '';
+
+                        if (searchRestaurant.length !== 0) {
+                            restaurantHeadingTitle.textContent = 'Рестораны';
+                        }
+
+                        menuHeading.textContent = '';
+
+                        cardsRestaurants.textContent = '';
+                        menu.classList.remove('hide');
+
+                        searchRestaurant.forEach(createCardRestaurant);
+                    });
+
+
                     const products = data.map(function (item) {
                         return item.products;
                     });
-                    console.log(products);
 
                     products.forEach(function (product) {
                         getData(`./db/${product}`)
                             .then(function (data) {
                                 goods.push(...data);
                                 const searchGoods = goods.filter(function (item) {
-                                    return  item.name.toLowerCase().includes(value);
+                                    return item.name.toLowerCase().includes(value);
                                 });
 
                                 cardsMenu.textContent = '';
-
                                 containerPromo.classList.add('hide');
-                                restaurants.classList.add('hide');
+
+                                menuHeading.textContent = '';
+
+                                if (searchGoods.length !== 0 && cardsRestaurants.textContent !== '') {
+                                    menuHeading.classList.remove('hide');
+                                    menuHeading.textContent = '';
+                                    const heading = `<h2 class="section-title restaurant-title">Блюда</h2>`;
+                                    menuHeading.insertAdjacentHTML("beforeend", heading);
+                                } else if (searchGoods.length !== 0 && cardsRestaurants.textContent === '') {
+                                    menuHeading.classList.add('hide');
+                                    restaurantHeadingTitle.textContent = 'Блюда';
+                                } else if (searchGoods.length === 0 && cardsRestaurants.textContent === '') {
+                                    menuHeading.classList.remove('hide');
+                                    restaurantHeadingTitle.textContent = `Ничего не найдено по запросу ${value}`;
+                                }
+
                                 menu.classList.remove('hide');
-
-                                restaurantHeading.textContent = '';
-
-                                const heading = `
-			                            <h2 class="section-title restaurant-title">Результат поиска</h2>`;
-
-                                restaurantHeading.insertAdjacentHTML("beforeend", heading);
 
                                 return searchGoods;
                             })
                             .then(function (data) {
                                 data.forEach(createCardGood);
                             })
-                    })
+                    });
                 });
-
         }
     });
 
