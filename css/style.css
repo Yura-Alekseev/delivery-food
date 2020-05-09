@@ -837,4 +837,8 @@ button {
     .footer-link:not(:last-child) {
         margin-right: 0;
     }
+
+    .modal-dialog {
+        padding: 40px 20px;
+    }
 }
